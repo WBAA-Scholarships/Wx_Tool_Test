@@ -136,19 +136,24 @@ function fetchWx(){
  if(!/^[A-Z0-9]{3,4}$/.test(id)){st.textContent="Enter a 3–4 character airport ID.";return}
  var px=$("proxy").value.trim();try{localStorage.setItem("pm_proxy",px);localStorage.setItem("pm_apt",id)}catch(e){}
  var base=px||"https://aviationweather.gov/api/data/metar";
- var url=base+(base.indexOf("?")>-1?"&":"?")+"ids="+id+"&format=raw";
- st.textContent="Fetching…";
- fetch(url).then(function(r){
+ var url=base+(base.indexOf("?")>-1?"&":"?")+"ids="+id+"&format=raw&_="+Date.now();
+ $("metar").value="";score();
+ st.textContent="Fetching "+id+"…";
+ fetch(url,{cache:"no-store"}).then(function(r){
   if(r.status===204)throw new Error("nodata");
   if(!r.ok)throw new Error("http"+r.status);
   return r.text()}).then(function(t){
   t=t.trim();if(!t)throw new Error("nodata");
-  $("metar").value=t.split(/\n/)[0];st.textContent="Loaded "+id+" at "+new Date().toLocaleTimeString()+".";score()
+  var line=t.split(/\n/)[0];$("metar").value=line;
+  var same=new RegExp("\\b"+id+"\\b").test(line.slice(0,14));
+  st.textContent=(same?"Loaded ":"Warning: reply doesn’t look like ")+id+" at "+new Date().toLocaleTimeString()+". "+line.slice(0,40)+"…";score()
  }).catch(function(e){
   st.textContent=e.message==="nodata"?"No recent METAR for "+id+". Try a nearby airport.":
    (e instanceof TypeError?"Request blocked: "+e+" | Page origin: "+location.origin+" | Tried: "+url+" | Add a proxy URL above, or paste the METAR instead.":"Request failed ("+e.message+"). Paste the METAR instead.")})
 }
 $("fetchwx").onclick=fetchWx;
+$("apt").onchange=fetchWx;
+$("apt").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();fetchWx()}};
 var DEFAULT_PROXY="https://avwx-proxy.skytressaviation.workers.dev";
 $("proxy").value=DEFAULT_PROXY;
 try{$("proxy").value=localStorage.getItem("pm_proxy")||DEFAULT_PROXY;$("apt").value=localStorage.getItem("pm_apt")||""}catch(e){}
