@@ -149,7 +149,9 @@ function fetchWx(){
    (e instanceof TypeError?"Request blocked: "+e+" | Page origin: "+location.origin+" | Tried: "+url+" | Add a proxy URL above, or paste the METAR instead.":"Request failed ("+e.message+"). Paste the METAR instead.")})
 }
 $("fetchwx").onclick=fetchWx;
-try{$("proxy").value=localStorage.getItem("pm_proxy")||"";$("apt").value=localStorage.getItem("pm_apt")||""}catch(e){}
+var DEFAULT_PROXY="https://avwx-proxy.skytressaviation.workers.dev";
+$("proxy").value=DEFAULT_PROXY;
+try{$("proxy").value=localStorage.getItem("pm_proxy")||DEFAULT_PROXY;$("apt").value=localStorage.getItem("pm_apt")||""}catch(e){}
 $("run").onclick=score;$("mode").onchange=score;
 load();buildCats();
 </script>
